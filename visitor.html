@@ -52,7 +52,6 @@
       box-sizing: border-box;
     }
 
-    /* 背景をすりガラス風に透過 */
     .card {
       flex: 1;
       background-color: var(--bg-glass);
@@ -76,7 +75,6 @@
       margin: 0;
     }
 
-    /* 人数表示 */
     .counter-display {
       font-size: 110px;
       font-weight: 800;
@@ -87,7 +85,6 @@
       margin: auto 0;
     }
 
-    /* ボタンの横並びエリア */
     .button-group {
       display: flex;
       gap: 20px;
@@ -108,24 +105,11 @@
       text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
     }
 
-    .btn:active {
-      transform: scale(0.95);
-    }
-
-    /* ＋ボタン（比率2） */
-    .btn-plus {
-      flex: 2;
-      font-size: 60px;
-    }
+    .btn:active { transform: scale(0.95); }
+    .btn-plus { flex: 2; font-size: 60px; }
     .card-thai .btn-plus { background-color: var(--thai-color); }
     .card-non-thai .btn-plus { background-color: var(--non-thai-color); }
-
-    /* −ボタン（比率1） */
-    .btn-minus {
-      flex: 1;
-      font-size: 40px;
-      background-color: var(--minus-color);
-    }
+    .btn-minus { flex: 1; font-size: 40px; background-color: var(--minus-color); }
   </style>
 </head>
 <body>
@@ -137,8 +121,8 @@
       <h2 class="card-title">THAI</h2>
       <div class="counter-display" id="count-v-thai">0</div>
       <div class="button-group">
-        <button class="btn btn-minus" onclick="sendCount('Visitor-Thai', -1)">−</button>
-        <button class="btn btn-plus" onclick="sendCount('Visitor-Thai', 1)">＋</button>
+        <button class="btn btn-minus" onclick="handleClick('Visitor-Thai', -1)">−</button>
+        <button class="btn btn-plus" onclick="handleClick('Visitor-Thai', 1)">＋</button>
       </div>
     </div>
 
@@ -146,8 +130,8 @@
       <h2 class="card-title">NON THAI</h2>
       <div class="counter-display" id="count-v-non-thai">0</div>
       <div class="button-group">
-        <button class="btn btn-minus" onclick="sendCount('Visitor-NonThai', -1)">−</button>
-        <button class="btn btn-plus" onclick="sendCount('Visitor-NonThai', 1)">＋</button>
+        <button class="btn btn-minus" onclick="handleClick('Visitor-NonThai', -1)">−</button>
+        <button class="btn btn-plus" onclick="handleClick('Visitor-NonThai', 1)">＋</button>
       </div>
     </div>
   </div>
@@ -155,35 +139,49 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxIZEpf7CUc8tx0NUEKLmMIZqHpm8nPTfiQoRf9RNM4v9be4-wupokeSOI6CTagOc5w/exec";
 
-    window.addEventListener('DOMContentLoaded', fetchCurrentCounts);
-    setInterval(fetchCurrentCounts, 5000); // 5秒自動同期
+    // iPad側で保持する現在のローカルカウント数
+    let currentCounts = { vThai: 0, vNonThai: 0 };
 
-    async function sendCount(type, value) {
+    window.addEventListener('DOMContentLoaded', fetchCurrentCounts);
+    setInterval(fetchCurrentCounts, 10000); // バックグラウンド同期は10秒毎
+
+    // ボタンが押されたら「一瞬」で画面を書き換える関数
+    function handleClick(type, value) {
+      // 1. まずiPad上の数字をその場で計算して書き換える（待ち時間ゼロ！）
+      if (type === 'Visitor-Thai') {
+        currentCounts.vThai = Math.max(0, currentCounts.vThai + value);
+        document.getElementById('count-v-thai').innerText = currentCounts.vThai;
+      } else if (type === 'Visitor-NonThai') {
+        currentCounts.vNonThai = Math.max(0, currentCounts.vNonThai + value);
+        document.getElementById('count-v-non-thai').innerText = currentCounts.vNonThai;
+      }
+
+      // 2. 通信は裏でこっそり行う（画面は待たせない）
+      sendCountBackend(type, value);
+    }
+
+    async function sendCountBackend(type, value) {
       try {
-        const response = await fetch(GAS_URL, {
+        await fetch(GAS_URL, {
           method: "POST",
           mode: "cors",
           headers: { "Content-Type": "text/plain" },
           body: JSON.stringify({ type: type, value: value })
         });
-        const result = await response.json();
-        if (result.status === "success") { updateDisplay(result.data); }
-      } catch (error) { console.error(error); }
+      } catch (error) { console.error("Backend send failed:", error); }
     }
 
     async function fetchCurrentCounts() {
       try {
         const response = await fetch(GAS_URL);
         const data = await response.json();
-        updateDisplay(data);
-      } catch (error) { console.error(error); }
-    }
-
-    function updateDisplay(data) {
-      if(data) {
-        document.getElementById('count-v-thai').innerText = data.vThai;
-        document.getElementById('count-v-non-thai').innerText = data.vNonThai;
-      }
+        if (data) {
+          currentCounts.vThai = data.vThai;
+          currentCounts.vNonThai = data.vNonThai;
+          document.getElementById('count-v-thai').innerText = currentCounts.vThai;
+          document.getElementById('count-v-non-thai').innerText = currentCounts.vNonThai;
+        }
+      } catch (error) { console.error("Fetch failed:", error); }
     }
   </script>
 </body>
