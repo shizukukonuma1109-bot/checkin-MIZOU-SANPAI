@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MEMBER受付">
+
   <title>MEMBER Counter</title>
   <style>
     :root {
@@ -15,7 +20,6 @@
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-      /* 背景画像の設定 */
       background-image: url('外観.jpg');
       background-size: cover;
       background-position: center;
@@ -48,7 +52,7 @@
       box-sizing: border-box;
     }
 
-    /* 各枠（THAI / NON THAI）の背景をすりガラス風に透過 */
+    /* 背景をすりガラス風に透過 */
     .card {
       flex: 1;
       background-color: var(--bg-glass);
@@ -72,7 +76,7 @@
       margin: 0;
     }
 
-    /* 人数表示（背景を透過させつつ、数字はハッキリ） */
+    /* 人数表示 */
     .counter-display {
       font-size: 110px;
       font-weight: 800;
@@ -83,7 +87,7 @@
       margin: auto 0;
     }
 
-    /* ボタンを横並びにするエリア */
+    /* ボタンの横並びエリア */
     .button-group {
       display: flex;
       gap: 20px;
@@ -108,7 +112,7 @@
       transform: scale(0.95);
     }
 
-    /* ＋ボタン（大きく配置） */
+    /* ＋ボタン（比率2） */
     .btn-plus {
       flex: 2;
       font-size: 60px;
@@ -116,7 +120,7 @@
     .card-thai .btn-plus { background-color: var(--thai-color); }
     .card-non-thai .btn-plus { background-color: var(--non-thai-color); }
 
-    /* −ボタン（横並びで配置） */
+    /* −ボタン（比率1） */
     .btn-minus {
       flex: 1;
       font-size: 40px;
@@ -149,11 +153,10 @@
   </div>
 
   <script>
-    // 【重要】ここにGASのWebアプリURLを入力してください
     const GAS_URL = "https://script.google.com/macros/s/AKfycbycPZZHEsCMtPrTIs3xlYIMSG0GkVpvkuxssURyvKFFG-gVvDiyOkfGSrHEv9UMu6w/exec";
 
     window.addEventListener('DOMContentLoaded', fetchCurrentCounts);
-    setInterval(fetchCurrentCounts, 5000);
+    setInterval(fetchCurrentCounts, 5000); // 5秒自動同期
 
     async function sendCount(type, value) {
       try {
