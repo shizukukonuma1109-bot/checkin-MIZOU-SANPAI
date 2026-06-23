@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VISITOR Counter</title>
+  <style>
+    /* スタイル（デザイン）はMember用と全く同じ、見やすさ優先 */
+    :root {
+      --thai-color: #007aff;
+      --non-thai-color: #34c759;
+      --minus-color: #ff3b30;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      background-color: #f2f2f7;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+    .header {
+      background-color: #ffffff;
+      padding: 20px;
+      text-align: center;
+      font-size: 32px;
+      font-weight: 800;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      z-index: 10;
+      letter-spacing: 2px;
+    }
+    .container {
+      display: flex;
+      flex: 1;
+      height: 100%;
+      padding: 20px;
+      gap: 20px;
+      box-sizing: border-box;
+    }
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .btn-main {
+      flex: 4;
+      border: none;
+      border-radius: 25px;
+      color: white;
+      font-size: 48px;
+      font-weight: bold;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn-thai { background-color: var(--thai-color); }
+    .btn-non-thai { background-color: var(--non-thai-color); }
+    .btn-main:active { transform: scale(0.98); opacity: 0.9; }
+    .counter-display {
+      font-size: 72px;
+      font-weight: 800;
+      background: rgba(255, 255, 255, 0.25);
+      padding: 10px 40px;
+      border-radius: 15px;
+      min-width: 120px;
+      text-align: center;
+    }
+    .btn-sub {
+      flex: 1;
+      margin-top: 20px;
+      border: 3px solid var(--minus-color);
+      background-color: #ffffff;
+      color: var(--minus-color);
+      border-radius: 15px;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-sub:active { background-color: var(--minus-color); color: #ffffff; }
+  </style>
+</head>
+<body>
+
+  <div class="header">🚪 VISITOR TERMINAL (Non-Member)</div>
+  
+  <div class="container">
+    <div class="column">
+      <button class="btn-main btn-thai" onclick="sendCount('Visitor-Thai', 1)">
+        THAI
+        <div class="counter-display" id="count-v-thai">0</div>
+      </button>
+      <button class="btn-sub" onclick="sendCount('Visitor-Thai', -1)">− 誤入力</button>
+    </div>
+
+    <div class="column">
+      <button class="btn-main btn-non-thai" onclick="sendCount('Visitor-NonThai', 1)">
+        NON THAI
+        <div class="counter-display" id="count-v-non-thai">0</div>
+      </button>
+      <button class="btn-sub" onclick="sendCount('Visitor-NonThai', -1)">− 誤入力</button>
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyw57PBw_d304H1db9h5M0CqNml6lDNV2rvX5smS02mjfFUiQNY-4aH_p-pv8f0oPsI/exec";
+
+    window.addEventListener('DOMContentLoaded', fetchCurrentCounts);
+    setInterval(fetchCurrentCounts, 5000);
+
+    async function sendCount(type, value) {
+      try {
+        const response = await fetch(GAS_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ type: type, value: value })
+        });
+        const result = await response.json();
+        if (result.status === "success") { updateDisplay(result.data); }
+      } catch (error) { console.error(error); }
+    }
+
+    async function fetchCurrentCounts() {
+      try {
+        const response = await fetch(GAS_URL);
+        const data = await response.json();
+        updateDisplay(data);
+      } catch (error) { console.error(error); }
+    }
+
+    function updateDisplay(data) {
+      if(data) {
+        document.getElementById('count-v-thai').innerText = data.vThai;
+        document.getElementById('count-v-non-thai').innerText = data.vNonThai;
+      }
+    }
+  </script>
+</body>
+</html>
