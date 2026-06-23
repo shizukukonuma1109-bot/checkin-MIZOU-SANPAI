@@ -6,7 +6,7 @@
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="MEMBER受付">
+  <meta name="apple-mobile-web-app-title" content="MEMBER">
 
   <title>MEMBER Counter</title>
   <style>
@@ -31,17 +31,18 @@
       flex-direction: column;
     }
 
+    /* MEMBER専用：大きくハッキリとしたディープブルーのヘッダー */
     .header {
-      background-color: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(10px);
-      padding: 15px;
+      background: linear-gradient(135deg, rgba(10, 50, 120, 0.95), rgba(20, 80, 180, 0.95));
+      padding: 25px;
       text-align: center;
-      font-size: 28px;
-      font-weight: 800;
-      color: #1c1c1e;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      font-size: 55px; /* 文字を特大に */
+      font-weight: 900;
+      color: #ffffff;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
       z-index: 10;
-      letter-spacing: 2px;
+      letter-spacing: 4px;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
     }
 
     .container {
@@ -68,7 +69,7 @@
 
     .card-title {
       text-align: center;
-      font-size: 42px;
+      font-size: 45px;
       font-weight: 900;
       color: #ffffff;
       text-shadow: 2px 2px 10px rgba(0,0,0,0.6);
@@ -76,7 +77,7 @@
     }
 
     .counter-display {
-      font-size: 110px;
+      font-size: 120px;
       font-weight: 800;
       color: #ffffff;
       text-align: center;
@@ -106,15 +107,15 @@
     }
 
     .btn:active { transform: scale(0.95); }
-    .btn-plus { flex: 2; font-size: 60px; }
+    .btn-plus { flex: 2; font-size: 65px; }
     .card-thai .btn-plus { background-color: var(--thai-color); }
     .card-non-thai .btn-plus { background-color: var(--non-thai-color); }
-    .btn-minus { flex: 1; font-size: 40px; background-color: var(--minus-color); }
+    .btn-minus { flex: 1; font-size: 45px; background-color: var(--minus-color); }
   </style>
 </head>
 <body>
 
-  <div class="header">👤 MEMBER TERMINAL</div>
+  <div class="header">MEMBER</div>
   
   <div class="container">
     <div class="card card-thai">
@@ -139,15 +140,12 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxIZEpf7CUc8tx0NUEKLmMIZqHpm8nPTfiQoRf9RNM4v9be4-wupokeSOI6CTagOc5w/exec";
 
-    // iPad側で保持する現在のローカルカウント数
     let currentCounts = { mThai: 0, mNonThai: 0 };
 
     window.addEventListener('DOMContentLoaded', fetchCurrentCounts);
-    setInterval(fetchCurrentCounts, 10000); // バックグラウンド同期は10秒毎に間隔を広げて安定化
+    setInterval(fetchCurrentCounts, 10000);
 
-    // ボタンが押されたら「一瞬」で画面を書き換える関数
     function handleClick(type, value) {
-      // 1. まずiPad上の数字をその場で計算して書き換える（待ち時間ゼロ！）
       if (type === 'Member-Thai') {
         currentCounts.mThai = Math.max(0, currentCounts.mThai + value);
         document.getElementById('count-m-thai').innerText = currentCounts.mThai;
@@ -155,8 +153,6 @@
         currentCounts.mNonThai = Math.max(0, currentCounts.mNonThai + value);
         document.getElementById('count-m-non-thai').innerText = currentCounts.mNonThai;
       }
-
-      // 2. 通信は裏でこっそり行う（画面は待たせない）
       sendCountBackend(type, value);
     }
 
@@ -168,7 +164,6 @@
           headers: { "Content-Type": "text/plain" },
           body: JSON.stringify({ type: type, value: value })
         });
-        // 裏での送信完了時は、他のiPadとの同期を崩さないために定期フェッチに任せる
       } catch (error) { console.error("Backend send failed:", error); }
     }
 
@@ -176,7 +171,6 @@
       try {
         const response = await fetch(GAS_URL);
         const data = await response.json();
-        // 最新の正しいデータをサーバーから取得して上書き同期
         if (data) {
           currentCounts.mThai = data.mThai;
           currentCounts.mNonThai = data.mNonThai;
