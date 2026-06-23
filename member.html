@@ -107,10 +107,11 @@
   </div>
 
   <script>
-    const GAS_URL = "ここにGASのウェブアプリURLを貼り付けhttps://script.google.com/macros/s/AKfycbyw57PBw_d304H1db9h5M0CqNml6lDNV2rvX5smS02mjfFUiQNY-4aH_p-pv8f0oPsI/exec";
+    // 【重要】ここに新しいデプロイで取得したGASのWebアプリURLを入力してください
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxCu99WXWRt_4jrv-Z8BKvlrz_l2anZlSrn-_0hi_bfEhP4u8s-_Ic5ez1ztgSlNOzY/exec";
 
     window.addEventListener('DOMContentLoaded', fetchCurrentCounts);
-    setInterval(fetchCurrentCounts, 5000);
+    setInterval(fetchCurrentCounts, 5000); // 5秒ごとにバックグラウンド自動同期
 
     async function sendCount(type, value) {
       try {
