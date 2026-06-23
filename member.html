@@ -108,7 +108,136 @@
 
   <script>
     // 【重要】ここに新しいデプロイで取得したGASのWebアプリURLを入力してください
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxCu99WXWRt_4jrv-Z8BKvlrz_l2anZlSrn-_0hi_bfEhP4u8s-_Ic5ez1ztgSlNOzY/exec";
+    const GAS_URL = "function doPost(e) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(30000); // 同時押し衝突防止
+    
+    const jsonString = e.postData.contents;
+    const data = JSON.parse(jsonString);
+    
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // 1. Logシートに生の履歴を書き込み（不具合時の検証用）
+    const logSheet = ss.getSheetByName("Log");
+    if (logSheet) {
+      logSheet.appendRow([new Date(), data.type, Number(data.value)]);
+    }
+    
+    // 2. 日別集計シート（Dashboard）を更新・作成し、黒の罫線を引く
+    updateDashboard(ss, data.type, Number(data.value));
+    
+    // 3. 本日の最新合計値をフロント（iPad）に返す
+    const result = getTodayCounts(ss);
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: "success", data: result }))
+                         .setMimeType(ContentService.MimeType.JSON);
+                         
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: error.toString() }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function doGet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const result = getTodayCounts(ss);
+  return ContentService.createTextOutput(JSON.stringify(result))
+                       .setMimeType(ContentService.MimeType.JSON);
+}
+
+// 日別集計シート（Dashboard）を自動更新し、黒の罫線を引くロジック
+function updateDashboard(ss, type, value) {
+  const dashSheet = ss.getSheetByName("Dashboard");
+  const data = dashSheet.getDataRange().getValues();
+  
+  // 今日の日付を時間なしの「YYYY/MM/DD」形式の文字列にする
+  const todayStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy/MM/dd");
+  
+  // 対応する列番号を特定
+  let colIndex = 0;
+  if (type === "Member-Thai") colIndex = 2;     // B列
+  if (type === "Member-NonThai") colIndex = 3;  // C列
+  if (type === "Visitor-Thai") colIndex = 4;    // D列
+  if (type === "Visitor-NonThai") colIndex = 5; // E列
+  
+  if (colIndex === 0) return;
+  
+  let targetRow = -1;
+  
+  // 3行目（インデックス2）以降から今日の日付の行があるか探す
+  for (let i = 2; i < data.length; i++) {
+    let cellDateStr = "";
+    if (data[i][0] instanceof Date) {
+      cellDateStr = Utilities.formatDate(data[i][0], Session.getScriptTimeZone(), "yyyy/MM/dd");
+    } else {
+      cellDateStr = String(data[i][0]);
+    }
+    
+    // 時間を含まず、日付文字列だけで一致するか確認
+    if (cellDateStr === todayStr) {
+      targetRow = i + 1; // 行番号を取得
+      break;
+    }
+  }
+  
+  // 今日の行がまだなければ、新しい行を一番下に追加する
+  if (targetRow === -1) {
+    dashSheet.appendRow([todayStr, 0, 0, 0, 0]);
+    targetRow = dashSheet.getLastRow();
+    
+    // 新しく追加された行（A列〜E列）に黒の格子罫線を引く
+    const newRowRange = dashSheet.getRange(targetRow, 1, 1, 5);
+    newRowRange.setBorder(
+      true,  // 上
+      true,  // 左
+      true,  // 下
+      true,  // 右
+      true,  // 内側垂直
+      true,  // 内側水平
+      "#000000", 
+      SpreadsheetApp.BorderStyle.SOLID
+    );
+    newRowRange.setHorizontalAlignment("center");
+    // 日付の表示形式を「yyyy/mm/dd」に固定
+    dashSheet.getRange(targetRow, 1).setNumberFormat("yyyy/mm/dd");
+  }
+  
+  // 該当セルの現在の値を取得して、新しい値を加算
+  const currentVal = Number(dashSheet.getRange(targetRow, colIndex).getValue());
+  const newVal = Math.max(0, currentVal + value); // マイナスガード
+  
+  dashSheet.getRange(targetRow, colIndex).setValue(newVal);
+}
+
+// iPad画面表示用に「今日」の合計カウントだけを取得する関数
+function getTodayCounts(ss) {
+  const dashSheet = ss.getSheetByName("Dashboard");
+  const data = dashSheet.getDataRange().getValues();
+  const todayStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy/MM/dd");
+  
+  let counts = { mThai: 0, mNonThai: 0, vThai: 0, vNonThai: 0 };
+  
+  for (let i = 2; i < data.length; i++) {
+    let cellDateStr = "";
+    if (data[i][0] instanceof Date) {
+      cellDateStr = Utilities.formatDate(data[i][0], Session.getScriptTimeZone(), "yyyy/MM/dd");
+    } else {
+      cellDateStr = String(data[i][0]);
+    }
+    
+    if (cellDateStr === todayStr) {
+      counts.mThai = Number(data[i][1]);
+      counts.mNonThai = Number(data[i][2]);
+      counts.vThai = Number(data[i][3]);
+      counts.vNonThai = Number(data[i][4]);
+      break;
+    }
+  }
+  return counts;
+}";
 
     window.addEventListener('DOMContentLoaded', fetchCurrentCounts);
     setInterval(fetchCurrentCounts, 5000); // 5秒ごとにバックグラウンド自動同期
