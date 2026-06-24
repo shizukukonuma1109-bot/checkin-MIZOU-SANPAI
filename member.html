@@ -96,7 +96,7 @@
       z-index: 2;
     }
 
-    /* メインの足跡ボタン（普通の黒に変更） */
+    /* 固定の足跡（150pxのまま据え置き） */
     .main-footprint {
       width: 150px;
       height: 150px;
@@ -110,15 +110,15 @@
       transform: scale(0.92);
     }
 
-    /* アニメーション用の足跡（普通の黒に変更） */
+    /* トコトコ歩くアニメーション足跡（特大350px！） */
     .walking-step {
       position: absolute;
-      width: 150px;
-      height: 150px;
+      width: 350px;
+      height: 350px;
       fill: rgba(0, 0, 0, 0.75);
       opacity: 0;
       pointer-events: none;
-      z-index: 1;
+      z-index: 1; /* 数字や固定ボタンの後ろを歩く */
     }
 
     .btn-minus {
@@ -144,25 +144,26 @@
       background-color: rgba(255, 59, 48, 0.6);
     }
 
+    /* 350pxの巨体に合わせた、画面下から上への小幅まったりトコトコアニメーション */
     @keyframes walkUpLeft {
-      0% { transform: translateY(180px) translateX(-40px) rotate(-10deg) scale(0.95); opacity: 0; }
+      0% { transform: translateY(280px) translateX(-70px) rotate(-10deg); opacity: 0; }
       10% { opacity: 0.75; }
-      80% { transform: translateY(120px) translateX(-40px) rotate(-10deg) scale(0.95); opacity: 0.75; }
-      100% { transform: translateY(100px) translateX(-40px) rotate(-10deg) scale(0.9); opacity: 0; }
+      80% { transform: translateY(180px) translateX(-70px) rotate(-10deg); opacity: 0.75; }
+      100% { transform: translateY(150px) translateX(-70px) rotate(-10deg); opacity: 0; }
     }
 
     @keyframes walkUpRight {
-      0% { transform: translateY(100px) translateX(40px) rotate(10deg) scale(0.95); opacity: 0; }
+      0% { transform: translateY(150px) translateX(70px) rotate(10deg); opacity: 0; }
       10% { opacity: 0.75; }
-      80% { transform: translateY(40px) translateX(40px) rotate(10deg) scale(0.95); opacity: 0.75; }
-      100% { transform: translateY(20px) translateX(40px) rotate(10deg) scale(0.9); opacity: 0; }
+      80% { transform: translateY(50px) translateX(70px) rotate(10deg); opacity: 0.75; }
+      100% { transform: translateY(20px) translateX(70px) rotate(10deg); opacity: 0; }
     }
 
     @keyframes walkUpFinal {
-      0% { transform: translateY(20px) translateX(-30px) rotate(-10deg) scale(0.95); opacity: 0; }
+      0% { transform: translateY(20px) translateX(-50px) rotate(-10deg); opacity: 0; }
       10% { opacity: 0.75; }
-      80% { transform: translateY(-40px) translateX(-30px) rotate(-10deg) scale(0.95); opacity: 0.75; }
-      100% { transform: translateY(-60px) translateX(-30px) rotate(-10deg) scale(0.9); opacity: 0; }
+      80% { transform: translateY(-80px) translateX(-50px) rotate(-10deg); opacity: 0.75; }
+      100% { transform: translateY(-110px) translateX(-50px) rotate(-10deg); opacity: 0; }
     }
   </style>
 </head>
@@ -240,16 +241,17 @@
         ? [leftFootSVG, rightFootSVG, leftFootSVG] 
         : [rightFootSVG, leftFootSVG, rightFootSVG];
       
-      const delays = [0, 450, 900];
+      // 歩幅が小さく見えるよう、一歩ずつの間隔を「500ms」に少しゆったり設定
+      const delays = [0, 500, 1000];
 
       animations.forEach((anim, index) => {
         setTimeout(() => {
           const step = document.createElement('div');
           step.className = 'walking-step';
           step.innerHTML = svgs[index];
-          step.style.animation = `${anim} 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards`;
+          step.style.animation = `${anim} 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards`;
           zone.appendChild(step);
-          setTimeout(() => step.remove(), 1500);
+          setTimeout(() => step.remove(), 1600);
         }, delays[index]);
       });
     }
