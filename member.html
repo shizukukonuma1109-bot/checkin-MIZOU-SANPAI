@@ -108,7 +108,7 @@
       z-index: 3;
     }
 
-    /* 波紋（個々のサークルスタイル） */
+    /* ★波紋アニメーションを1.6秒に伸ばして、もっと優雅でスローに */
     .ripple-effect {
       position: absolute;
       top: 50%;
@@ -118,17 +118,17 @@
       margin-top: -90px;
       margin-left: -90px;
       border-radius: 50%;
-      border: 5px solid rgba(0, 225, 255, 0.85);
-      background: radial-gradient(circle, rgba(0, 225, 255, 0.2) 0%, rgba(0, 225, 255, 0) 70%);
+      border: 4px solid rgba(0, 225, 255, 0.85);
+      background: radial-gradient(circle, rgba(0, 225, 255, 0.15) 0%, rgba(0, 225, 255, 0) 70%);
       pointer-events: none;
       z-index: 4;
-      animation: rippleSpread 0.85s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+      animation: rippleSpread 1.6s cubic-bezier(0.1, 0.4, 0.2, 1) forwards;
     }
 
     @keyframes rippleSpread {
-      0% { transform: scale(0); opacity: 1; border-width: 8px; }
-      40% { opacity: 0.9; }
-      100% { transform: scale(2.3); opacity: 0; border-width: 1px; }
+      0% { transform: scale(0); opacity: 1; border-width: 6px; }
+      30% { opacity: 0.9; }
+      100% { transform: scale(2.4); opacity: 0; border-width: 0.5px; }
     }
 
     .footprint-zone:active .ripple-button {
@@ -153,7 +153,6 @@
       background-color: var(--minus-color);
       border: 1px solid rgba(255,255,255,0.3);
       border-radius: 14px;
-      color: #ffffff !important;
       font-size: 32px;
       font-weight: bold;
       cursor: pointer;
@@ -168,7 +167,6 @@
       background-color: rgba(255, 59, 48, 0.6);
     }
 
-    /* ★ゆったり歩くようにアニメーションのY移動を調整(1.8s ➔ 2.4sに変更) */
     @keyframes walkUpLeft {
       0% { transform: translateY(300px) translateX(-60px) rotate(-10deg); opacity: 0; }
       15% { opacity: 0.75; }
@@ -204,7 +202,7 @@
         <div class="ripple-button"></div>
       </div>
 
-      <button class="btn-minus" onclick="handleClick('Member-Thai', -1)">−</button>
+      <button class="btn-minus" onclick="handleClick('Member-Thai', -1)" style="color: #ffffff !important;">−</button>
     </div>
 
     <div class="card card-non-thai">
@@ -215,7 +213,7 @@
         <div class="ripple-button"></div>
       </div>
 
-      <button class="btn-minus" onclick="handleClick('Member-NonThai', -1)">−</button>
+      <button class="btn-minus" onclick="handleClick('Member-NonThai', -1)" style="color: #ffffff !important;">−</button>
     </div>
   </div>
 
@@ -240,24 +238,24 @@
       }
 
       if (value === 1 && element) {
-        createTripleRipple(element); // ★3連波紋を呼ぶ
+        createTripleRipple(element);
         spawnFootprints(element);
       }
       sendCountBackend(type, value);
     }
 
-    // ★中心から1つずつ、合計3つのサークルが順番に広がる制御
+    // ★波紋が出る間隔を0.35秒（350ms）に広げ、1つずつ綺麗に湧き出るようにしました
     function createTripleRipple(zone) {
       const button = zone.querySelector('.ripple-button');
       if (!button) return;
 
-      const delays = [0, 200, 400]; // 0.2秒刻みで次々発生
+      const delays = [0, 350, 700]; 
       delays.forEach(delay => {
         setTimeout(() => {
           const ripple = document.createElement('div');
           ripple.className = 'ripple-effect';
           button.appendChild(ripple);
-          setTimeout(() => ripple.remove(), 850);
+          setTimeout(() => ripple.remove(), 1600);
         }, delay);
       });
     }
@@ -265,14 +263,13 @@
     function spawnFootprints(zone) {
       const animations = ['walkUpLeft', 'walkUpRight', 'walkUpFinal'];
       const svgs = [leftFootSVG, rightFootSVG, leftFootSVG];
-      const delays = [0, 650, 1300]; // ★歩くテンポもゆっくりに(0.65秒刻み)
+      const delays = [0, 650, 1300];
 
       animations.forEach((anim, index) => {
         setTimeout(() => {
           const step = document.createElement('div');
           step.className = 'walking-step';
           step.innerHTML = svgs[index];
-          // アニメーション持続時間を1.8sから2.4sへ延長
           step.style.animation = `${anim} 2.4s cubic-bezier(0.25, 1, 0.5, 1) forwards`;
           zone.appendChild(step);
           setTimeout(() => step.remove(), 2400);
