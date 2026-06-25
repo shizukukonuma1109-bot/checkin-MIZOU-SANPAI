@@ -11,9 +11,9 @@
   <title>VISITOR Counter</title>
   <style>
     :root {
-      --thai-color: rgba(0, 122, 255, 0.85);
-      --non-thai-color: rgba(52, 199, 89, 0.85);
-      --minus-color: rgba(255, 59, 48, 0.9);
+      /* ②・③ マイナスボタンとガラス背景の定義 */
+      --minus-bg: rgba(230, 230, 230, 0.85); /* 薄いグレー */
+      --minus-border: #2ecc71;                /* みどり */
       --bg-glass: rgba(255, 255, 255, 0.25);
     }
     
@@ -31,18 +31,24 @@
       flex-direction: column;
     }
 
-    /* VISITOR専用：注意を惹きつける鮮やかなオレンジ・ゴールドのヘッダー */
+    /* ④ 3秒長押しリセット用のヘッダー */
     .header {
       background: linear-gradient(135deg, rgba(230, 90, 10, 0.95), rgba(245, 140, 20, 0.95));
       padding: 25px;
       text-align: center;
-      font-size: 55px; /* 文字を特大に */
+      font-size: 55px;
       font-weight: 900;
       color: #ffffff;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
       z-index: 10;
       letter-spacing: 4px;
       text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+      cursor: pointer;
+      transition: background 0.3s;
+      -webkit-touch-callout: none;
+    }
+    .header:active {
+      background: linear-gradient(135deg, rgba(245, 140, 20, 0.95), rgba(255, 160, 40, 0.95));
     }
 
     .container {
@@ -63,121 +69,265 @@
       padding: 30px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      align-items: center;
+      position: relative;
       box-shadow: 0 15px 35px rgba(0,0,0,0.2);
     }
 
     .card-title {
-      text-align: center;
       font-size: 45px;
       font-weight: 900;
       color: #ffffff;
       text-shadow: 2px 2px 10px rgba(0,0,0,0.6);
-      margin: 0;
+      margin: 0 0 10px 0;
+      text-align: center;
+      z-index: 6;
     }
 
     .counter-display {
-      font-size: 120px;
+      font-size: 110px;
       font-weight: 800;
       color: #ffffff;
-      text-align: center;
       text-shadow: 2px 4px 15px rgba(0,0,0,0.7);
       font-variant-numeric: tabular-nums;
-      margin: auto 0;
+      margin: 10px 0 10px 0;
+      z-index: 6;
     }
 
-    .button-group {
-      display: flex;
-      gap: 20px;
-      height: 25%;
-    }
-
-    .btn {
-      border: none;
-      border-radius: 20px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      transition: transform 0.1s;
+    /* ② サークル周辺エリア（ここではカウントイベントを発生させない） */
+    .footprint-zone {
+      width: 100%;
+      flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
-      text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 1;
     }
 
-    .btn:active { transform: scale(0.95); }
-    .btn-plus { flex: 2; font-size: 65px; }
-    .card-thai .btn-plus { background-color: var(--thai-color); }
-    .card-non-thai .btn-plus { background-color: var(--non-thai-color); }
-    .btn-minus { flex: 1; font-size: 45px; background-color: var(--minus-color); }
+    /* ② カウント対象をこの「美しいサークル」のみに限定 */
+    .ripple-button {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(135, 206, 250, 0.95) 0%, rgba(30, 144, 255, 0.45) 70%, rgba(0, 191, 255, 0) 100%);
+      box-shadow: 0 0 35px rgba(0, 191, 255, 0.7), inset 0 0 20px rgba(255, 255, 255, 0.6);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      transition: transform 0.1s;
+      z-index: 3;
+      cursor: pointer;
+    }
+
+    .ripple-effect {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 180px;
+      height: 180px;
+      margin-top: -90px;
+      margin-left: -90px;
+      border-radius: 50%;
+      border: 3px solid rgba(0, 225, 255, 0.85);
+      background: radial-gradient(circle, rgba(0, 225, 255, 0.1) 0%, rgba(0, 225, 255, 0) 70%);
+      pointer-events: none;
+      z-index: 4;
+      animation: rippleSpread 4.0s cubic-bezier(0.1, 0.2, 0.3, 1) forwards;
+    }
+
+    @keyframes rippleSpread {
+      0% { transform: scale(0); opacity: 1; border-width: 5px; }
+      20% { opacity: 0.9; }
+      100% { transform: scale(2.6); opacity: 0; border-width: 0.5px; }
+    }
+
+    .ripple-button:active {
+      transform: scale(0.94);
+    }
+
+    .walking-step {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* ③ マイナスボタン：BOXは薄いグレー、枠はみどり、―は太文字の黒 */
+    .btn-minus {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 55px;
+      height: 55px;
+      background-color: var(--minus-bg) !important;
+      border: 2px solid var(--minus-border) !important;
+      border-radius: 14px !important;
+      
+      -webkit-appearance: none;
+      appearance: none;
+      box-shadow: none;
+      
+      color: #000000 !important;   /* 太文字の黒 */
+      font-size: 36px !important;
+      font-weight: 900 !important;
+      line-height: 1 !important;
+      
+      cursor: pointer;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 10;
+    }
+    .btn-minus:active {
+      background-color: rgba(255, 59, 48, 0.3) !important;
+    }
+
+    @keyframes walkUpLeft {
+      0% { transform: translateY(300px) translateX(-60px) rotate(-10deg); opacity: 0; }
+      15% { opacity: 0.75; }
+      85% { transform: translateY(-150px) translateX(-60px) rotate(-10deg); opacity: 0.75; }
+      100% { transform: translateY(-220px) translateX(-60px) rotate(-10deg); opacity: 0; }
+    }
+
+    @keyframes walkUpRight {
+      0% { transform: translateY(160px) translateX(60px) rotate(10deg); opacity: 0; }
+      15% { opacity: 0.75; }
+      85% { transform: translateY(-280px) translateX(60px) rotate(10deg); opacity: 0.75; }
+      100% { transform: translateY(-350px) translateX(60px) rotate(10deg); opacity: 0; }
+    }
+
+    @keyframes walkUpFinal {
+      0% { transform: translateY(20px) translateX(-40px) rotate(-10deg); opacity: 0; }
+      15% { opacity: 0.75; }
+      85% { transform: translateY(-420px) translateX(-40px) rotate(-10deg); opacity: 0.75; }
+      100% { transform: translateY(-500px) translateX(-40px) rotate(-10deg) scale(0.85); opacity: 0; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="header">VISITOR</div>
+  <div class="header" id="header-btn" onmousedown="startResetTimer()" onmouseup="clearResetTimer()" onmouseleave="clearResetTimer()" ontouchstart="startResetTimer()" ontouchend="clearResetTimer()">VISITOR</div>
   
   <div class="container">
     <div class="card card-thai">
       <h2 class="card-title">THAI</h2>
       <div class="counter-display" id="count-v-thai">0</div>
-      <div class="button-group">
-        <button class="btn btn-minus" onclick="handleClick('Visitor-Thai', -1)">−</button>
-        <button class="btn btn-plus" onclick="handleClick('Visitor-Thai', 1)">＋</button>
+      
+      <div class="footprint-zone">
+        <div class="ripple-button" onclick="handleCircleClick('Visitor-Thai', this)"></div>
       </div>
+
+      <button class="btn-minus" onclick="handleMinusClick('Visitor-Thai')">−</button>
     </div>
 
     <div class="card card-non-thai">
       <h2 class="card-title">NON THAI</h2>
       <div class="counter-display" id="count-v-non-thai">0</div>
-      <div class="button-group">
-        <button class="btn btn-minus" onclick="handleClick('Visitor-NonThai', -1)">−</button>
-        <button class="btn btn-plus" onclick="handleClick('Visitor-NonThai', 1)">＋</button>
+      
+      <div class="footprint-zone">
+        <div class="ripple-button" onclick="handleCircleClick('Visitor-NonThai', this)"></div>
       </div>
+
+      <button class="btn-minus" onclick="handleMinusClick('Visitor-NonThai')">−</button>
     </div>
   </div>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxIZEpf7CUc8tx0NUEKLmMIZqHpm8nPTfiQoRf9RNM4v9be4-wupokeSOI6CTagOc5w/exec";
+    // ① 端末内のlocalStorageで爆速管理
+    let currentCounts = {
+      vThai: parseInt(localStorage.getItem('vThai')) || 0,
+      vNonThai: parseInt(localStorage.getItem('vNonThai')) || 0
+    };
 
-    let currentCounts = { vThai: 0, vNonThai: 0 };
+    window.addEventListener('DOMContentLoaded', () => {
+      updateDisplay();
+    });
 
-    window.addEventListener('DOMContentLoaded', fetchCurrentCounts);
-    setInterval(fetchCurrentCounts, 10000);
+    function updateDisplay() {
+      document.getElementById('count-v-thai').innerText = currentCounts.vThai;
+      document.getElementById('count-v-non-thai').innerText = currentCounts.vNonThai;
+    }
 
-    function handleClick(type, value) {
+    // ② サークルが押されたときの処理
+    function handleCircleClick(type, circleElement) {
       if (type === 'Visitor-Thai') {
-        currentCounts.vThai = Math.max(0, currentCounts.vThai + value);
-        document.getElementById('count-v-thai').innerText = currentCounts.vThai;
-      } else if (type === 'Visitor-NonThai') {
-        currentCounts.vNonThai = Math.max(0, currentCounts.vNonThai + value);
-        document.getElementById('count-v-non-thai').innerText = currentCounts.vNonThai;
+        currentCounts.vThai++;
+        localStorage.setItem('vThai', currentCounts.vThai);
+      } else {
+        currentCounts.vNonThai++;
+        localStorage.setItem('vNonThai', currentCounts.vNonThai);
       }
-      sendCountBackend(type, value);
+      updateDisplay();
+
+      const zone = circleElement.parentElement;
+      createTripleRipple(circleElement);
+      spawnFootprints(zone);
     }
 
-    async function sendCountBackend(type, value) {
-      try {
-        await fetch(GAS_URL, {
-          method: "POST",
-          mode: "cors",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({ type: type, value: value })
-        });
-      } catch (error) { console.error("Backend send failed:", error); }
+    // マイナスボタンの処理
+    function handleMinusClick(type) {
+      if (type === 'Visitor-Thai') {
+        currentCounts.vThai = Math.max(0, currentCounts.vThai - 1);
+        localStorage.setItem('vThai', currentCounts.vThai);
+      } else {
+        currentCounts.vNonThai = Math.max(0, currentCounts.vNonThai - 1);
+        localStorage.setItem('vNonThai', currentCounts.vNonThai);
+      }
+      updateDisplay();
     }
 
-    async function fetchCurrentCounts() {
-      try {
-        const response = await fetch(GAS_URL);
-        const data = await response.json();
-        if (data) {
-          currentCounts.vThai = data.vThai;
-          currentCounts.vNonThai = data.vNonThai;
-          document.getElementById('count-v-thai').innerText = currentCounts.vThai;
-          document.getElementById('count-v-non-thai').innerText = currentCounts.vNonThai;
+    function createTripleRipple(button) {
+      const delays = [0, 700, 1400];
+      delays.forEach(delay => {
+        setTimeout(() => {
+          const ripple = document.createElement('div');
+          ripple.className = 'ripple-effect';
+          button.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 4000);
+        }, delay);
+      });
+    }
+
+    function spawnFootprints(zone) {
+      const animations = ['walkUpLeft', 'walkUpRight', 'walkUpFinal'];
+      const svgs = [leftFootSVG, rightFootSVG, leftFootSVG];
+      const delays = [0, 650, 1300];
+
+      animations.forEach((anim, index) => {
+        setTimeout(() => {
+          const step = document.createElement('div');
+          step.className = 'walking-step';
+          step.innerHTML = svgs[index];
+          step.style.animation = `${anim} 2.4s cubic-bezier(0.25, 1, 0.5, 1) forwards`;
+          zone.appendChild(step);
+          setTimeout(() => step.remove(), 2400);
+        }, delays[index]);
+      });
+    }
+
+    const leftFootSVG = `<svg width="100%" height="100%" viewBox="0 0 100 100" style="fill: rgba(0,0,0,0.78);"><path d="M52,85 C45,85 42,75 44,62 C46,52 38,44 40,34 C42,26 52,25 56,32 C60,39 56,48 58,58 C60,68 60,85 52,85 Z"/><circle cx="61" cy="18" r="6"/><circle cx="50" cy="16" r="4.5"/><circle cx="41" cy="19" r="4"/><circle cx="33" cy="24" r="3.5"/><circle cx="27" cy="31" r="3"/></svg>`;
+    const rightFootSVG = `<svg width="100%" height="100%" viewBox="0 0 100 100" style="fill: rgba(0,0,0,0.78);"><path d="M48,85 C55,85 58,75 56,62 C54,52 62,44 60,34 C58,26 48,25 44,32 C40,39 44,48 42,58 C40,68 40,85 48,85 Z"/><circle cx="39" cy="18" r="6"/><circle cx="50" cy="16" r="4.5"/><circle cx="59" cy="19" r="4"/><circle cx="67" cy="24" r="3.5"/><circle cx="73" cy="31" r="3"/></svg>`;
+
+    // ④ 3秒長押しタイマー処理
+    let resetTimer = null;
+    function startResetTimer() {
+      resetTimer = setTimeout(() => {
+        if (confirm("Reset VISITOR counts to 0?")) {
+          currentCounts.vThai = 0;
+          currentCounts.vNonThai = 0;
+          localStorage.setItem('vThai', 0);
+          localStorage.setItem('vNonThai', 0);
+          updateDisplay();
         }
-      } catch (error) { console.error("Fetch failed:", error); }
+      }, 3000);
+    }
+
+    function clearResetTimer() {
+      clearTimeout(resetTimer);
     }
   </script>
 </body>
