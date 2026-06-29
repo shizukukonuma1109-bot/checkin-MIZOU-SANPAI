@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="VISITOR">
 
-  <title>VISITOR Counter</title>
+  <title>NON-THAI Counter</title>
   <style>
     :root {
       --minus-bg: rgba(230, 230, 230, 0.85);
@@ -33,29 +33,25 @@
       flex-direction: column;
     }
 
-    /* 変更：極限までぼかしたアブストラクトなホワイト＆ゴールドのボケグラデーション */
     .header {
       position: relative;
       padding: 25px;
       text-align: center;
-      font-size: 55px;
+      font-size: 50px;
       font-weight: 900;
       color: #ffffff;
       box-shadow: 0 6px 30px rgba(0,0,0,0.4);
       z-index: 10;
-      letter-spacing: 4px;
+      letter-spacing: 2px;
       text-shadow: 1px 2px 8px rgba(0,0,0,0.4);
-      overflow: hidden;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
       
-      /* レイヤーを重ねて美しい温かみのあるボケ感を表現 */
-      background: #3d3a37;
+      background-color: #302d2a;
       background-image: 
-        radial-gradient(at 15% 25%, rgba(244, 241, 234, 0.35) 0px, transparent 50%),
-        radial-gradient(at 75% 30%, rgba(212, 175, 55, 0.35) 0px, transparent 60%),
-        radial-gradient(at 60% 85%, rgba(61, 58, 55, 0.9) 0px, transparent 70%);
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
+        radial-gradient(circle at 15% -10%, #f4f1ea 0%, transparent 65%),
+        radial-gradient(circle at 80% 30%, #e5c158 0%, transparent 70%),
+        radial-gradient(circle at 60% 120%, #23211f 0%, transparent 85%);
+      background-blend-mode: screen;
     }
 
     .btn-reset {
@@ -140,6 +136,7 @@
       z-index: 1;
     }
 
+    /* ボタン中央のテキスト設定を削除し、完全に空白に */
     .ripple-button {
       position: relative;
       width: 180px;
@@ -241,7 +238,7 @@
 <body>
 
   <div class="header">
-    VISITOR
+    🇯🇵 NON-THAI 🗺️
     <button class="btn-reset" onclick="triggerReset()" oncontextmenu="return false;">
       <svg viewBox="0 0 24 24">
         <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
@@ -250,19 +247,19 @@
   </div>
   
   <div class="container">
-    <div class="card card-thai">
-      <h2 class="card-title">THAI</h2>
-      <div class="counter-display" id="count-v-thai">0</div>
+    <div class="card">
+      <h2 class="card-title">MEMBER</h2>
+      <div class="counter-display" id="count-m-non-thai">0</div>
       
       <div class="footprint-zone">
-        <div class="ripple-button" onclick="handleCircleClick('Visitor-Thai', this)"></div>
+        <div class="ripple-button" onclick="handleCircleClick('Member-NonThai', this)"></div>
       </div>
 
-      <button class="btn-minus" onclick="handleMinusClick('Visitor-Thai')">−</button>
+      <button class="btn-minus" onclick="handleMinusClick('Member-NonThai')">−</button>
     </div>
 
-    <div class="card card-non-thai">
-      <h2 class="card-title">NON THAI</h2>
+    <div class="card">
+      <h2 class="card-title">VISITOR</h2>
       <div class="counter-display" id="count-v-non-thai">0</div>
       
       <div class="footprint-zone">
@@ -275,27 +272,24 @@
 
   <script>
     let currentCounts = {
-      vThai: parseInt(localStorage.getItem('vThai')) || 0,
+      mNonThai: parseInt(localStorage.getItem('mNonThai')) || 0,
       vNonThai: parseInt(localStorage.getItem('vNonThai')) || 0
     };
 
     window.addEventListener('DOMContentLoaded', () => {
       updateDisplay();
-      
-      window.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-      }, { passive: false });
+      window.addEventListener('contextmenu', function(e) { e.preventDefault(); }, { passive: false });
     });
 
     function updateDisplay() {
-      document.getElementById('count-v-thai').innerText = currentCounts.vThai;
+      document.getElementById('count-m-non-thai').innerText = currentCounts.mNonThai;
       document.getElementById('count-v-non-thai').innerText = currentCounts.vNonThai;
     }
 
     function handleCircleClick(type, circleElement) {
-      if (type === 'Visitor-Thai') {
-        currentCounts.vThai++;
-        localStorage.setItem('vThai', currentCounts.vThai);
+      if (type === 'Member-NonThai') {
+        currentCounts.mNonThai++;
+        localStorage.setItem('mNonThai', currentCounts.mNonThai);
       } else {
         currentCounts.vNonThai++;
         localStorage.setItem('vNonThai', currentCounts.vNonThai);
@@ -308,9 +302,9 @@
     }
 
     function handleMinusClick(type) {
-      if (type === 'Visitor-Thai') {
-        currentCounts.vThai = Math.max(0, currentCounts.vThai - 1);
-        localStorage.setItem('vThai', currentCounts.vThai);
+      if (type === 'Member-NonThai') {
+        currentCounts.mNonThai = Math.max(0, currentCounts.mNonThai - 1);
+        localStorage.setItem('mNonThai', currentCounts.mNonThai);
       } else {
         currentCounts.vNonThai = Math.max(0, currentCounts.vNonThai - 1);
         localStorage.setItem('vNonThai', currentCounts.vNonThai);
@@ -351,10 +345,10 @@
     const rightFootSVG = `<svg width="100%" height="100%" viewBox="0 0 100 100" style="fill: rgba(0,0,0,0.78);"><path d="M48,85 C55,85 58,75 56,62 C54,52 62,44 60,34 C58,26 48,25 44,32 C40,39 44,48 42,58 C40,68 40,85 48,85 Z"/><circle cx="39" cy="18" r="6"/><circle cx="50" cy="16" r="4.5"/><circle cx="59" cy="19" r="4"/><circle cx="67" cy="24" r="3.5"/><circle cx="73" cy="31" r="3"/></svg>`;
 
     function triggerReset() {
-      if (confirm("Reset VISITOR counts to 0?")) {
-        currentCounts.vThai = 0;
+      if (confirm("Reset MEMBER / VISITOR counts to 0?")) {
+        currentCounts.mNonThai = 0;
         currentCounts.vNonThai = 0;
-        localStorage.setItem('vThai', 0);
+        localStorage.setItem('mNonThai', 0);
         localStorage.setItem('vNonThai', 0);
         updateDisplay();
       }
