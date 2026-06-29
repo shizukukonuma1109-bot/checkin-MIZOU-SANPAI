@@ -136,6 +136,7 @@
       z-index: 1;
     }
 
+    /* ボタン中央のテキスト設定を削除し、完全に空白に */
     .ripple-button {
       position: relative;
       width: 180px;
@@ -147,14 +148,6 @@
       transition: transform 0.1s;
       z-index: 3;
       cursor: pointer;
-      
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #ffffff;
-      font-size: 32px;
-      font-weight: 800;
-      text-shadow: 1px 2px 6px rgba(0,0,0,0.5);
     }
 
     .ripple-effect {
@@ -259,7 +252,7 @@
       <div class="counter-display" id="count-m-thai">0</div>
       
       <div class="footprint-zone">
-        <div class="ripple-button" onclick="handleCircleClick('Member-Thai', this)">Member</div>
+        <div class="ripple-button" onclick="handleCircleClick('Member-Thai', this)"></div>
       </div>
 
       <button class="btn-minus" onclick="handleMinusClick('Member-Thai')">−</button>
@@ -270,14 +263,14 @@
       <div class="counter-display" id="count-v-thai">0</div>
       
       <div class="footprint-zone">
-        <div class="ripple-button" onclick="handleCircleClick('Visitor-Thai', this)">Visitor</div>
+        <div class="ripple-button" onclick="handleCircleClick('Visitor-Thai', this)"></div>
       </div>
 
       <button class="btn-minus" onclick="handleMinusClick('Visitor-Thai')">−</button>
     </div>
   </div>
 
-  <script {contentFetchId="uploaded:image_be1e3f.png-1506097c-16e3-434b-861a-4f02f5fa9afa"}>
+  <script>
     let currentCounts = {
       mThai: parseInt(localStorage.getItem('mThai')) || 0,
       vThai: parseInt(localStorage.getItem('vThai')) || 0
